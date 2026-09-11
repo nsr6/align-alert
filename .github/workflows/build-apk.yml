@@ -35,7 +35,7 @@ jobs:
         run: |
           set -o pipefail
           if ! ./gradlew --no-daemon assembleDebug 2>&1 | tee build-output.log; then
-            SUMMARY=$(grep -E '(^e: |^\* What went wrong:|^FAILURE:|^error:)' build-output.log | tail -10 | tr '\n' ' ')
+            SUMMARY=$(sed -n '/\* What went wrong:/,/^\* Try:/p' build-output.log | tr '\n' ' ' | cut -c1-3500)
             echo "::error title=APK build failed::${SUMMARY:-See the workflow log for details.}"
             exit 1
           fi
