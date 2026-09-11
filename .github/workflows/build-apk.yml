@@ -31,7 +31,14 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build the installable APK
-        run: ./gradlew --no-daemon assembleDebug
+        shell: bash
+        run: |
+          set -o pipefail
+          if ! ./gradlew --no-daemon assembleDebug 2>&1 | tee build-output.log; then
+            SUMMARY=$(grep -E '(^e: |^\* What went wrong:|^FAILURE:|^error:)' build-output.log | tail -10 | tr '\n' ' ')
+            echo "::error title=APK build failed::${SUMMARY:-See the workflow log for details.}"
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
